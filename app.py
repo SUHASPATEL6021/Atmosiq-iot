@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from pathlib import Path
+from io import StringIO
+from sensor_utils import load_readings
 
 st.set_page_config(page_title="AtmosIQ IoT",page_icon="🌡️",layout="wide")
 st.title("🌡️ AtmosIQ — Environmental Monitoring")
@@ -16,23 +18,23 @@ if mode == "Simulated demo":
 else:
     upload = st.file_uploader("Upload a CSV from serial_logger.py",type="csv")
     if upload:
-        df = pd.read_csv(upload)
+        source = upload
     elif Path("sample_data/sensor_readings.csv").exists():
-        df = pd.read_csv("sample_data/sensor_readings.csv")
+        source = "sample_data/sensor_readings.csv"
         st.info("Showing bundled sample readings.")
     else:
         st.info("Upload a CSV with timestamp, temperature_c, humidity_pct.")
         st.stop()
-required = {"timestamp","temperature_c","humidity_pct"}
-if not required.issubset(df.columns):
-    st.error(f"CSV must contain {', '.join(sorted(required))}")
-    st.stop()
-df["timestamp"] = pd.to_datetime(df["timestamp"],errors="coerce")
-for col in ["temperature_c","humidity_pct"]:
-    df[col] = pd.to_numeric(df[col],errors="coerce")
-df = df.dropna(subset=list(required)).sort_values("timestamp")
-if df.empty:
-    st.error("No valid readings found.")
+try:
+    if mode == "Logged CSV":
+        if upload and upload.size > 2_000_000:
+            st.error("CSV upload must be 2 MB or smaller.")
+            st.stop()
+        df = load_readings(source)
+    else:
+        df = load_readings(StringIO(df.to_csv(index=False)))
+except (ValueError, OSError) as exc:
+    st.error(str(exc))
     st.stop()
 latest = df.iloc[-1]
 a,b,c = st.columns(3)
