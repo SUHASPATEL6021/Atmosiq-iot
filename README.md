@@ -2,6 +2,11 @@
 
 Streamlit dashboard for DHT11 temperature and humidity measurements, with a simulation mode that works without hardware.
 
+## 🌐 Live demo
+**[Open AtmosIQ IoT](https://suhas-atmosiq-iot.streamlit.app/)**
+
+The hosted app supports simulated data and uploaded CSV logs. Physical Arduino serial logging must run locally.
+
 ## Features
 - Demo mode with clearly labeled simulated readings
 - CSV upload for real logged readings
