@@ -3,6 +3,7 @@ import csv
 import argparse
 from datetime import datetime
 import serial
+import math
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--port",required=True,help="Example: COM3 or /dev/ttyUSB0")
@@ -19,7 +20,7 @@ with serial.Serial(args.port,args.baud,timeout=3) as device, open(args.output,"a
             line = device.readline().decode("utf-8",errors="replace").strip()
             try:
                 temp,humidity = (float(x) for x in line.split(","))
-                if -40 <= temp <= 80 and 0 <= humidity <= 100:
+                if math.isfinite(temp) and math.isfinite(humidity) and -40 <= temp <= 80 and 0 <= humidity <= 100:
                     writer.writerow([datetime.now().isoformat(timespec="seconds"),temp,humidity])
                     file.flush()
                     print(temp,humidity)
